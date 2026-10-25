@@ -1,0 +1,62 @@
+<!DOCTYPE html><html lang="ar" dir="rtl"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>بوابة السفير — NextStep AI</title><meta name="robots" content="noindex">
+<link rel="icon" href="assets/logo.png"><link rel="stylesheet" href="style.css"></head>
+<body><header><div class="w"><nav><b><img src="assets/logo.png" alt=""><span class="wm">NextStep <i>AI</i></span> · بوابة السفير</b><a class="btn s o" href="index.html">← الترتيب</a></nav></div></header>
+<div class="w"><div class="box formcard f" id="m"></div></div><div id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js"></script><script src="config.js"></script><script src="mock.js"></script><script src="common.js"></script><script src="bg.js"></script>
+<script>
+const LS={get:()=>{try{return localStorage.getItem("amb_code")}catch(e){return null}},set:c=>{try{localStorage.setItem("amb_code",c)}catch(e){}},del:()=>{try{localStorage.removeItem("amb_code")}catch(e){}}};
+let P=null,S={},PH=null,tab="p",dark=false,code=LS.get()||"";
+const cstat=()=>({ap:(P.refs||[]).length,ok:cdParts(S).ph==="end"});
+const v=i=>($("#"+i)||{}).value||"",m=$("#m");
+const img=s=>new Promise(r=>{const i=new Image();i.onload=()=>r(i);i.onerror=()=>r(null);i.src=s});
+const caption=()=>`يسعدني أن أكون سفيراً لمنصة NextStep AI 🚀\nأشارك في تحدي السفراء 2027 — رقم عضويتي \u2066${P.number}\u2069\nتابعونا: ${CFG.site}\n#NextStepAmbassadors #NextStepAI`;
+async function claim(c){try{const{data,error}=await sb.rpc("amb_claim",{p_code:c});return error?null:data}catch(e){return null}}
+function gate(){m.innerHTML=`<h2 style="margin:0">🔐 بوابة السفير</h2><p style="color:var(--mut)">أدخل رقمك الخاص الذي أرسله لك فريق NextStep AI لتكمل بياناتك وتحصل على بطاقتك.</p><input id="cd" class="code-in" placeholder="XXXXXXXX" maxlength="20" autocomplete="off"><button class="btn" data-a="go">دخول</button>`}
+async function enter(c){const d=await claim(c);if(!d){LS.del();return toast("الرقم غير صحيح")}P=d;code=c;LS.set(c);try{const r=await sb.from("amb_settings").select("*");(r.data||[]).forEach(x=>S[x.key]=x.value)}catch(e){}show()}
+function show(){const subs=P.subs||[],di=dayInfo(S),today=new Date().toISOString().slice(0,10);
+const tabs=`<div class="seg">${[["p","بياناتي"],["c","بطاقتي"],["d","استقطابي"],["f","شهادتي"]].map(([k,n])=>`<button class="${tab===k?"on":""}" data-a="tab" data-t="${k}">${n}</button>`).join("")}</div>`;
+let b="";
+if(tab==="p")b=`<div class="pp"><div class="prev" id="pv">${PH||P.photo?`<img class="prev" src="${esc(PH||P.photo)}" alt="">`:"＋"}</div><div style="flex:1"><label>صورتك الشخصية</label><label class="btn s o" for="ph">📷 اختر صورة</label><input type="file" id="ph" accept="image/*" hidden><small style="color:var(--mut)">تُضغط تلقائياً</small></div></div><label>الاسم</label><input id="n" value="${esc(P.name)}" maxlength="80"><label>التخصص / الجامعة</label><input id="t" value="${esc(P.title)}" maxlength="80"><label>المدينة / الدولة</label><input id="ci" value="${esc(P.city)}" maxlength="60"><label>نبذة قصيرة</label><textarea id="bio" rows="2" maxlength="240">${esc(P.bio)}</textarea><label>رابط لينكدإن (https://…)</label><input id="li" dir="ltr" value="${esc(P.linkedin)}"><label>رابط إنستغرام (https://…)</label><input id="ig" dir="ltr" value="${esc(P.instagram)}"><button class="btn" data-a="save">حفظ بياناتي</button><div class="box"><b>🔗 رابط ملفك العام</b><small class="ltr" style="display:block;overflow-wrap:anywhere;white-space:normal">${esc(CFG.site)}/profile.html?n=${esc(P.number)}</small><button class="btn s o" data-a="cpl" style="margin-top:8px">نسخ الرابط</button></div>`;
+if(tab==="c")b=`<div class="seg"><button class="${dark?"":"on"}" data-a="th" data-t="0">فاتحة</button><button class="${dark?"on":""}" data-a="th" data-t="1">داكنة</button></div><canvas id="cv"></canvas>${P.registered?"":`<small style="color:var(--mut)">احفظ بياناتك وصورتك أولاً لتظهر في البطاقة.</small>`}<div class="btns"><button class="btn" data-a="dl">⬇️ تحميل الصورة</button><button class="btn o" data-a="sh">📤 مشاركة</button></div><div class="btns"><a class="btn o" target="_blank" rel="noopener" href="https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(CFG.site)}" data-a="cap">in · لينكدإن</a><button class="btn o" data-a="ig">📸 إنستغرام</button><button class="btn o" data-a="cap">📋 نسخ النص</button></div><small style="color:var(--mut)">لينكدإن وإنستغرام لا يقبلان صورة جاهزة عبر الروابط: حمّل البطاقة وانشرها يدوياً، وانسخ النص المقترح.</small>`;
+if(tab==="d"){const rf=P.refs||[],msg=`السلام عليكم، أنا [اسمك]، وتعرفت على NextStep AI عبر السفير ${P.name} (\u2066${P.number}\u2069) 🌟 وأرغب بالانضمام إلى المجتمع.`;b=`<div class="stats" style="grid-template-columns:repeat(3,1fr)"><div class="stat"><b>${rf.length}</b><small>مستقطَب معتمد</small></div><div class="stat"><b>${P.points}</b><small>نقطتي</small></div><div class="stat"><b>${di.t}</b><small>${di.s}</small></div></div><div class="rule">📌 يُحتسب فقط من يراسل صفحة NextStep AI على لينكدإن ويذكر اسمك أو رقمك (<bdi class="ltr">${esc(P.number)}</bdi>). المتابعة وحدها لا تكفي.</div><label>الرسالة التي ترسلها لمن تدعوه</label><textarea id="rm" rows="4" readonly>${esc(msg)}</textarea><div class="btns"><button class="btn" data-a="cpm">📋 نسخ الرسالة</button><a class="btn o" target="_blank" rel="noopener" href="${CFG.linkedinPage}">فتح صفحة NextStep AI</a></div><b>المستقطَبون المعتمدون</b>${rf.map(r=>`<div class="row"><span>✅ ${esc(r.n)}</span><small>${r.d}</small></div>`).join("")||"<small>لا أحد بعد — ابدأ بدعوة أصدقائك!</small>"}`}
+const CS=cstat();if(tab==="f")b=CS.ok?`<canvas id="cf" style="max-width:100%"></canvas><div class="btns"><button class="btn" data-a="dlc">⬇️ تحميل الشهادة</button></div>`:`<div class="box"><b>🎓 شهادة المشاركة</b><small>تُفتح عند انتهاء التحدي وتتضمن عدد من استقطبتهم (${CS.ap} حتى الآن).</small></div>`;
+m.innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><div><b>${esc(P.name)}</b><br><code>${esc(P.number)}</code></div><button class="btn s o" data-a="out">خروج</button></div>${tabs}${b}`;if(tab==="c")draw();if(tab==="f"&&CS.ok)cert()}
+async function draw(){await document.fonts.load("800 40px Tajawal,Manrope,sans-serif");const W=1080,H=1350,c=$("#cv"),x=c.getContext("2d");c.width=W;c.height=H;const ink=dark?"#fff":"#0B1220",mut=dark?"#9fb6e6":"#5b6b8c",cx=W/2,cy=520,R=200;
+let g=x.createLinearGradient(0,0,W,H);g.addColorStop(0,dark?"#0B1220":"#fff");g.addColorStop(1,dark?"#12337a":"#eaf1ff");x.fillStyle=g;x.fillRect(0,0,W,H);
+let r=x.createRadialGradient(W,0,0,W,0,700);r.addColorStop(0,"rgba(53,214,245,.35)");r.addColorStop(1,"rgba(53,214,245,0)");x.fillStyle=r;x.fillRect(0,0,W,H);
+let b=x.createLinearGradient(0,0,W,0);b.addColorStop(0,"#2563EB");b.addColorStop(1,"#06B6D4");x.fillStyle=b;x.fillRect(0,0,W,16);
+const lg=await img("assets/logo.png");if(lg)x.drawImage(lg,60,50,110,110);
+x.fillStyle=ink;x.font="800 42px Tajawal,Manrope,sans-serif";x.textAlign="left";x.direction="ltr";x.fillText("NextStep AI",185,118);
+x.textAlign="center";x.direction="rtl";x.fillStyle=mut;x.font="700 36px Tajawal,Manrope,sans-serif";x.fillText("سفير \u2066NextStep · 2027\u2069",cx,290);
+x.fillStyle=b;x.beginPath();x.arc(cx,cy,R+14,0,7);x.fill();x.save();x.beginPath();x.arc(cx,cy,R,0,7);x.clip();
+const ph=P.photo&&await img(P.photo);if(ph){const s=Math.max(2*R/ph.width,2*R/ph.height);x.drawImage(ph,cx-ph.width*s/2,cy-ph.height*s/2,ph.width*s,ph.height*s)}else{x.fillStyle="#2563EB";x.fillRect(cx-R,cy-R,2*R,2*R);x.fillStyle="#fff";x.font="800 200px Tajawal,Manrope,sans-serif";x.fillText((P.name||"؟")[0],cx,cy+70)}x.restore();
+x.fillStyle=ink;x.font="900 72px Tajawal,Manrope,sans-serif";x.fillText(P.name||"",cx,850,920);x.fillStyle=mut;x.font="500 38px Tajawal,Manrope,sans-serif";x.fillText([P.title,P.city].filter(Boolean).join(" · "),cx,915,920);
+x.fillStyle=b;x.beginPath();x.roundRect(cx-240,965,480,86,43);x.fill();x.fillStyle="#fff";x.font="800 40px Tajawal,Manrope,sans-serif";x.direction="ltr";x.fillText(P.number||"",cx,1023);x.direction="rtl";
+x.fillStyle=ink;x.font="800 48px Tajawal,Manrope,sans-serif";x.fillText("أشارك في تحدي السفراء",cx,1150);
+x.fillStyle=mut;x.font="600 32px Tajawal,Manrope,sans-serif";x.direction="ltr";x.fillText("#NextStepAmbassadors  ·  "+CFG.site.replace(/^https?:\/\//,""),cx,1215);
+[0,1,2].forEach(i=>{x.fillStyle=i==2?"#06B6D4":"#2563EB";x.fillRect(cx-85+i*60,1285-i*0,50,18)})}
+const blob=(id="cv")=>new Promise(r=>$("#"+id).toBlob(r,"image/png"));
+async function cert(){await document.fonts.load("800 40px Tajawal,Manrope,sans-serif");const W=1600,H=1130,c=$("#cf"),x=c.getContext("2d"),C=cstat();c.width=W;c.height=H;x.fillStyle="#fff";x.fillRect(0,0,W,H);
+let b=x.createLinearGradient(0,0,W,0);b.addColorStop(0,"#2563EB");b.addColorStop(1,"#06B6D4");x.fillStyle=b;x.fillRect(0,0,W,22);x.fillRect(0,H-22,W,22);x.strokeStyle="#d9e6ff";x.lineWidth=4;x.strokeRect(50,60,W-100,H-120);
+const lg=await img("assets/logo.png");if(lg)x.drawImage(lg,W/2-60,95,120,120);x.textAlign="center";x.direction="rtl";
+x.fillStyle="#0B1220";x.font="900 76px Tajawal,Manrope,sans-serif";x.fillText("شهادة مشاركة",W/2,310);x.fillStyle="#5b6b8c";x.font="500 38px Tajawal,Manrope,sans-serif";x.fillText("تشهد NextStep AI بأن السفير",W/2,410);
+x.fillStyle="#2563EB";x.font="900 92px Tajawal,Manrope,sans-serif";x.fillText(P.name||"",W/2,550,1300);x.fillStyle="#5b6b8c";x.font="500 38px Tajawal,Manrope,sans-serif";x.fillText("شارك في تحدي السفراء 2027 واستقطب "+C.ap+" عضواً جديداً",W/2,650);
+x.fillStyle="#0B1220";x.font="700 34px Tajawal,Manrope,sans-serif";x.direction="ltr";x.fillText(P.number||"",W/2,730);x.fillRect(W/2-220,905,440,3);x.font="800 42px Tajawal,Manrope,sans-serif";x.fillText("Eng. Ahmed Alhayek",W/2,960);x.fillStyle="#5b6b8c";x.font="500 30px Tajawal,Manrope,sans-serif";x.fillText("AI Engineer · Founder & CEO, NextStep AI",W/2,1008)}
+function pick(f){return new Promise(res=>{const i=new Image();i.onload=()=>{const c=document.createElement("canvas");c.width=c.height=300;const s=Math.max(300/i.width,300/i.height);c.getContext("2d").drawImage(i,150-i.width*s/2,150-i.height*s/2,i.width*s,i.height*s);res(c.toDataURL("image/jpeg",.82))};i.src=URL.createObjectURL(f)})}
+document.addEventListener("change",async e=>{if(e.target.id==="ph"&&e.target.files[0]){PH=await pick(e.target.files[0]);$("#pv").innerHTML=`<img class="prev" src="${PH}" alt="">`}});
+document.addEventListener("click",async e=>{const b=e.target.closest("[data-a]");if(!b)return;const a=b.dataset.a;
+if(a==="go")return enter(v("cd").trim().toUpperCase());
+if(a==="out"){LS.del();P=null;return gate()}
+if(a==="tab"){tab=b.dataset.t;return show()}
+if(a==="th"){dark=b.dataset.t==="1";return show()}
+if(a==="save"){const{data,error}=await sb.rpc("amb_save",{p_code:code,p_name:v("n"),p_title:v("t"),p_city:v("ci"),p_bio:v("bio"),p_li:v("li"),p_ig:v("ig"),p_photo:PH||P.photo||null});if(error||!data)return toast(error?error.message:"تعذّر الحفظ");PH=null;P=await claim(code);toast("تم الحفظ ✓");return show()}
+if(a==="sub"){const{data,error}=await sb.rpc("amb_submit",{p_code:code,p_url:v("u").trim()});if(error)return toast(error.message);P=await claim(code);toast("أُرسل للاعتماد ✓");return show()}
+if(a==="dl"){const l=document.createElement("a");l.href=URL.createObjectURL(await blob());l.download="NextStep-Ambassador-"+P.number+".png";l.click();return}
+if(a==="sh"){const f=new File([await blob()],"ambassador.png",{type:"image/png"});if(navigator.canShare&&navigator.canShare({files:[f]}))return navigator.share({files:[f],text:caption()}).catch(()=>{});return toast("المشاركة المباشرة غير مدعومة هنا، استخدم التحميل")}
+if(a==="cpm"){await navigator.clipboard.writeText($("#rm").value).catch(()=>{});return toast("نُسخت الرسالة ✓")}
+if(a==="cpl"){await navigator.clipboard.writeText(CFG.site+"/profile.html?n="+P.number).catch(()=>{});return toast("نُسخ الرابط ✓")}
+if(a==="dlc"){const l=document.createElement("a");l.href=URL.createObjectURL(await blob("cf"));l.download="NextStep-Certificate-"+P.number+".png";l.click();return}
+if(a==="ig"){await navigator.clipboard.writeText(caption()).catch(()=>{});return toast("نُسخ النص — حمّل البطاقة وانشرها في إنستغرام")}
+if(a==="cap"){await navigator.clipboard.writeText(caption()).catch(()=>{});toast("نُسخ النص المقترح ✓")}});
+if(code)enter(code);else gate();
+</script><script src="bg.js"></script></body></html>
